@@ -18,6 +18,13 @@ const PLAYER_X := 420.0
 const LANE_Y := [575.0, 520.0, 470.0]
 const LANE_SCALE := [2.35, 2.05, 1.75]
 const LANE_Z := [30, 20, 10]
+const AMBUSH_TELEGRAPH := 1.1
+
+
+static func saw_volume_db(distance: float, vanished: bool) -> float:
+	if vanished:
+		return -32.0
+	return lerpf(-1.5, -18.0, clampf(distance, 0.0, 100.0) / 100.0)
 
 
 static func shift_lane(lane: int, dir: int) -> int:

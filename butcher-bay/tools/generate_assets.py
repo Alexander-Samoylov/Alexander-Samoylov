@@ -380,6 +380,27 @@ def make_ui() -> None:
     rect(bar_fill, 0, 0, 8, 12, C["blood_hi"])
     save(bar_fill, SPR / "ui" / "bar_fill.png")
 
+    dust = new_img(16, 12)
+    oval(dust, 1, 3, 8, 6, (90, 70, 60, 160))
+    oval(dust, 6, 2, 9, 7, (70, 50, 44, 120))
+    save(dust, SPR / "ui" / "dust.png")
+
+    streak = new_img(28, 8)
+    oval(streak, 0, 1, 28, 6, C["blood"])
+    oval(streak, 6, 2, 14, 3, C["blood_hi"])
+    save(streak, SPR / "ui" / "blood_streak.png")
+
+    vig = Image.new("RGBA", (256, 144), (0, 0, 0, 0))
+    for y in range(144):
+        for x in range(256):
+            nx = (x / 255.0 - 0.5) * 2.0
+            ny = (y / 143.0 - 0.5) * 2.0
+            d = (nx * nx * 0.85 + ny * ny) ** 0.5
+            a = int(min(210, max(0, (d - 0.52) * 300)))
+            if a:
+                vig.putpixel((x, y), (48, 4, 10, a))
+    save(vig.resize((1280, 720), Image.BILINEAR), SPR / "ui" / "vignette.png")
+
     title = new_img(64, 64)
     oval(title, 4, 4, 56, 56, C["blood_dk"])
     oval(title, 12, 12, 40, 40, C["metal"])
@@ -507,6 +528,53 @@ def make_audio() -> None:
         for i in range(n)
     ]
     write_wav(AUD / "music_drone.wav", drone, rate)
+
+    n = int(rate * 0.14)
+    land = [
+        rng.uniform(-0.35, 0.35) * (1 - i / n) + tone(70, i / rate, rate, 0.22) * (1 - i / n)
+        for i in range(n)
+    ]
+    write_wav(AUD / "sfx_land.wav", land, rate)
+
+    n = int(rate * 0.16)
+    lane = [
+        tone(240 + i * 1.4, i / rate, rate, 0.22) * (1 - i / n)
+        + rng.uniform(-0.05, 0.05)
+        for i in range(n)
+    ]
+    write_wav(AUD / "sfx_lane.wav", lane, rate)
+
+    n = int(rate * 0.28)
+    puddle = [
+        rng.uniform(-0.28, 0.28) * (1 - i / n)
+        + tone(110, i / rate, rate, 0.12) * (1 - i / n)
+        for i in range(n)
+    ]
+    write_wav(AUD / "sfx_puddle.wav", puddle, rate)
+
+    n = int(rate * 0.32)
+    hook = [
+        tone(520 - i * 0.35, i / rate, rate, 0.2) * (1 - i / n)
+        + tone(780, i / rate, rate, 0.06) * (1 - i / n)
+        for i in range(n)
+    ]
+    write_wav(AUD / "sfx_hook.wav", hook, rate)
+
+    n = int(rate * 0.7)
+    vanish = [
+        tone(90 - i * 0.05, i / rate, rate, 0.28) * (1 - i / n)
+        + rng.uniform(-0.06, 0.06) * (1 - i / n)
+        for i in range(n)
+    ]
+    write_wav(AUD / "sfx_vanish.wav", vanish, rate)
+
+    n = int(rate * 0.26)
+    vent = [
+        tone(310 + i * 1.8, i / rate, rate, 0.26) * (1 - i / n)
+        + rng.uniform(-0.04, 0.04)
+        for i in range(n)
+    ]
+    write_wav(AUD / "sfx_vent.wav", vent, rate)
 
 
 def make_player_and_butcher() -> None:

@@ -10,6 +10,9 @@ var prop_name: String = ""
 
 var _sprite: Sprite2D
 var _anim: AnimatedSprite2D
+var _whistled: bool = false
+var _t: float = 0.0
+var _base_scale: Vector2 = Vector2.ONE
 
 
 func setup(p_kind: String, p_lane: int, at_x: float, p_prop: String = "") -> void:
@@ -58,6 +61,7 @@ func setup(p_kind: String, p_lane: int, at_x: float, p_prop: String = "") -> voi
 		position.y = 360.0
 		scale = Vector2(2.2, 2.0)
 		z_index = 50
+	_base_scale = scale
 
 
 func _texture_path() -> String:
@@ -106,6 +110,34 @@ func _hit_size() -> Vector2:
 	return Vector2(40, 40)
 
 
+func _process(delta: float) -> void:
+	_t += delta
+	if kind_name == "hook" and _sprite:
+		_sprite.rotation = sin(_t * 5.2) * 0.38
+		if not _whistled and position.x < RunRules.PLAYER_X + 280.0:
+			_whistled = true
+			GameAudio.play("sfx_hook", -6.0, randf_range(0.92, 1.08))
+	elif kind_name == "puddle" and _sprite:
+		var gleam := 0.72 + 0.28 * sin(_t * 6.0)
+		_sprite.modulate = Color(1.15, gleam, gleam, 1.0)
+	elif kind_name == "saw" and _anim:
+		_anim.scale = Vector2.ONE * (1.0 + 0.06 * sin(_t * 18.0))
+	elif kind_name == "gut_wall":
+		var p := get_tree().get_first_node_in_group("player") as RunnerPlayer
+		var smash := false
+		if p and p.game:
+			smash = RunRules.can_smash(p.is_slowed(), p.is_boosting(), p.game.speed_ratio())
+		if smash:
+			modulate = Color(1.25, 0.95, 0.95)
+			scale = _base_scale * (1.0 + 0.04 * sin(_t * 10.0))
+		else:
+			modulate = Color(0.62, 0.4, 0.4)
+			scale = _base_scale
+	elif kind_name == "shield" or kind_name == "speed":
+		if _sprite:
+			_sprite.position.y = sin(_t * 4.0) * 6.0
+
+
 func on_player_hit(player: RunnerPlayer) -> void:
 	if consumed:
 		return
@@ -135,11 +167,11 @@ func _apply_result(player: RunnerPlayer, result: String) -> void:
 		"slow":
 			consumed = true
 			player.apply_slow()
-			_sfx("sfx_hit")
+			GameAudio.play("sfx_puddle", -2.0)
 			modulate.a = 0.4
 		"smash":
 			consumed = true
-			_sfx("sfx_smash")
+			GameAudio.play("sfx_smash", 0.0)
 			queue_free()
 			if player.game:
 				player.game.shake(10.0)
@@ -156,11 +188,11 @@ func _apply_result(player: RunnerPlayer, result: String) -> void:
 		"shield":
 			consumed = true
 			player.consume_shield()
-			_sfx("sfx_hit")
+			GameAudio.play("sfx_hit", -1.0)
 			queue_free()
 		"block":
 			consumed = true
-			_sfx("sfx_hit")
+			GameAudio.play("sfx_hit", 0.0)
 			if player.game:
 				player.game.chase.apply_penalty(32.0)
 				player.game.shake(14.0)
@@ -171,9 +203,3 @@ func _apply_result(player: RunnerPlayer, result: String) -> void:
 			player.kill(kind_name)
 
 
-func _sfx(name: String) -> void:
-	var p := AudioStreamPlayer.new()
-	p.stream = load("res://assets/audio/%s.wav" % name)
-	add_child(p)
-	p.finished.connect(p.queue_free)
-	p.play()

@@ -63,18 +63,10 @@ func strike(at: Vector2, lane: int) -> void:
 	z_index = 80
 	_visible_alpha = 1.0
 	_sprite.play("ambush")
-	_sfx("sfx_ambush")
+	GameAudio.play("sfx_ambush", 0.0, 0.95)
 
 
 func return_to_chase() -> void:
 	mode = Mode.CHASE
 	_sprite.play("run")
 	_visible_alpha = 1.0
-
-
-func _sfx(name: String) -> void:
-	var p := AudioStreamPlayer.new()
-	p.stream = load("res://assets/audio/%s.wav" % name)
-	add_child(p)
-	p.finished.connect(p.queue_free)
-	p.play()

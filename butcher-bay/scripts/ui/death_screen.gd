@@ -69,10 +69,7 @@ func _ready() -> void:
 	)
 	add_child(menu)
 
-	var sfx := AudioStreamPlayer.new()
-	sfx.stream = load("res://assets/audio/sfx_saw.wav")
-	sfx.autoplay = true
-	add_child(sfx)
+	GameAudio.start_death()
 
 
 func _unhandled_input(event: InputEvent) -> void:

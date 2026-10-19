@@ -58,10 +58,7 @@ func _ready() -> void:
 	help.modulate = Color(0.7, 0.62, 0.58)
 	add_child(help)
 
-	var drone := AudioStreamPlayer.new()
-	drone.stream = load("res://assets/audio/music_drone.wav")
-	drone.autoplay = true
-	add_child(drone)
+	GameAudio.start_menu()
 
 
 func _on_play() -> void:

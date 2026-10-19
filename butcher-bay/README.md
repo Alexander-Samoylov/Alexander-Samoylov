@@ -52,6 +52,8 @@ godot --headless --path . --export-release Web build/web/index.html
 
 Signed store builds are not produced in this repo; add your keystore / Apple team locally.
 
+Sound is centralized in the `GameAudio` autoload: one-shots for jump, land, lane, slide, hook, puddle, smash, vanish, vent; the chainsaw loop gets louder as the butcher closes in.
+
 ## Tests
 
 ```bash

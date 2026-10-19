@@ -30,6 +30,9 @@ func _init() -> void:
 	_t("butcher x at 0 near player", RunRules.butcher_x(0.0) > 250.0)
 	_t("butcher x at 100 far", RunRules.butcher_x(100.0) < 50.0)
 	_t("kind parse hook", RunRules.kind_from_name("hook") == RunRules.Kind.HOOK)
+	_t("saw close is loud", RunRules.saw_volume_db(0.0, false) > RunRules.saw_volume_db(100.0, false))
+	_t("saw vanish is quiet", RunRules.saw_volume_db(20.0, true) < RunRules.saw_volume_db(20.0, false))
+	_t("ambush telegraph readable", RunRules.AMBUSH_TELEGRAPH >= 1.0)
 	print("tests passed=%d failed=%d" % [_passed, _failed])
 	quit(1 if _failed > 0 else 0)
 

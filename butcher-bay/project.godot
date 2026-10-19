@@ -16,6 +16,7 @@ config/icon="res://icon.svg"
 [autoload]
 GameState="*res://scripts/autoload/game_state.gd"
 SwipeInput="*res://scripts/autoload/swipe_input.gd"
+GameAudio="*res://scripts/autoload/audio_manager.gd"
 
 [display]
 window/size/viewport_width=1280

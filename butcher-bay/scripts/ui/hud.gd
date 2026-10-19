@@ -7,14 +7,31 @@ extends CanvasLayer
 @onready var hint: Label
 
 var _banner_time: float = 0.0
+var _vignette: TextureRect
+var _flash_rect: ColorRect
 
 
 func _ready() -> void:
 	layer = 20
 	var root := Control.new()
-	root.set_anchors_preset(Control.PRESET_FULL_RECT)
+	root.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	root.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(root)
+
+	_vignette = TextureRect.new()
+	_vignette.texture = load("res://assets/sprites/ui/vignette.png")
+	_vignette.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_vignette.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_vignette.modulate.a = 0.0
+	_vignette.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_vignette.stretch_mode = TextureRect.STRETCH_SCALE
+	root.add_child(_vignette)
+
+	_flash_rect = ColorRect.new()
+	_flash_rect.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_flash_rect.color = Color(0.85, 0.12, 0.1, 0.0)
+	_flash_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	root.add_child(_flash_rect)
 
 	score_label = Label.new()
 	score_label.position = Vector2(36, 24)
@@ -98,3 +115,13 @@ func set_buffs(shielded: bool, boosting: bool, slowed: bool) -> void:
 func flash(text: String, time: float = 1.2) -> void:
 	banner.text = text
 	_banner_time = time
+
+
+func set_vignette(threat: float) -> void:
+	if _vignette:
+		_vignette.modulate.a = clampf(threat, 0.0, 1.0) * 0.85
+
+
+func set_flash(amount: float) -> void:
+	if _flash_rect:
+		_flash_rect.color.a = clampf(amount, 0.0, 1.0) * 0.45

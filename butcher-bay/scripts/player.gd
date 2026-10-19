@@ -28,6 +28,7 @@ var _area: Area2D
 var _body_shape: RectangleShape2D
 var _shield_fx: Sprite2D
 var _step_acc: float = 0.0
+var _blood_acc: float = 0.0
 
 
 func _ready() -> void:
@@ -58,6 +59,7 @@ func _ready() -> void:
 	add_child(_area)
 	_area.area_entered.connect(_on_area_entered)
 
+	add_to_group("player")
 	position = Vector2(RunRules.PLAYER_X, RunRules.lane_y(lane))
 	scale = Vector2.ONE * RunRules.lane_scale(lane)
 	z_index = RunRules.lane_z(lane)
@@ -94,7 +96,7 @@ func _process(delta: float) -> void:
 		if slow_left == 0.0:
 			buff_changed.emit()
 
-	lane_visual = lerpf(lane_visual, float(lane), clampf(delta * 14.0, 0.0, 1.0))
+	lane_visual = lerpf(lane_visual, float(lane), clampf(delta * 7.0, 0.0, 1.0))
 	var base_y := lerpf(RunRules.LANE_Y[0], RunRules.LANE_Y[2], lane_visual / 2.0)
 	# Blend across 3 lanes more accurately
 	if lane_visual <= 1.0:
@@ -115,8 +117,15 @@ func _process(delta: float) -> void:
 			jump_vy = 0.0
 			state = State.RUN
 			_play("run")
+			GameAudio.play("sfx_land", -2.0, randf_range(0.92, 1.08))
+			_puff()
 	elif state == State.SLIDE:
 		slide_left -= delta
+		_blood_acc += delta
+		if _blood_acc > 0.07:
+			_blood_acc = 0.0
+			if game and game.has_method("spawn_streak"):
+				game.spawn_streak(global_position + Vector2(-18, 28))
 		if slide_left <= 0.0:
 			state = State.RUN
 			_play("run")
@@ -142,14 +151,18 @@ func _process(delta: float) -> void:
 		_step_acc += delta
 		if _step_acc > 0.28:
 			_step_acc = 0.0
-			_sfx("sfx_step")
+			GameAudio.play("sfx_step", -8.0, randf_range(0.9, 1.12))
 
 
 func _on_swipe(direction: Vector2i) -> void:
 	if state == State.DEAD:
 		return
 	if direction.x != 0:
-		lane = RunRules.shift_lane(lane, direction.x)
+		var next := RunRules.shift_lane(lane, direction.x)
+		if next != lane:
+			lane = next
+			GameAudio.play("sfx_lane", -4.0, 1.0 + direction.x * 0.06)
+			_puff()
 		return
 	if direction.y < 0:
 		_up_action()
@@ -171,7 +184,7 @@ func start_jump() -> void:
 	jump_offset = -4.0
 	_set_hitbox(false)
 	_play("jump")
-	_sfx("sfx_jump")
+	GameAudio.play("sfx_jump", -1.0, randf_range(0.95, 1.05))
 
 
 func start_slide() -> void:
@@ -181,14 +194,14 @@ func start_slide() -> void:
 	slide_left = SLIDE_TIME
 	_set_hitbox(true)
 	_play("slide")
-	_sfx("sfx_slide")
+	GameAudio.play("sfx_slide", -2.0)
 
 
 func enter_vent() -> void:
 	state = State.VENT
 	vent_left = VENT_TIME
 	_play("vent")
-	_sfx("sfx_jump")
+	GameAudio.play("sfx_vent", -1.0)
 
 
 func apply_slow(duration: float = 1.4) -> void:
@@ -199,13 +212,13 @@ func apply_slow(duration: float = 1.4) -> void:
 func apply_shield() -> void:
 	shielded = true
 	buff_changed.emit()
-	_sfx("sfx_pickup")
+	GameAudio.play("sfx_pickup", -1.0, 1.05)
 
 
 func apply_speed(duration: float = 3.0) -> void:
 	speed_boost_left = maxf(speed_boost_left, duration)
 	buff_changed.emit()
-	_sfx("sfx_pickup")
+	GameAudio.play("sfx_pickup", -1.0, 1.2)
 
 
 func consume_shield() -> bool:
@@ -240,7 +253,7 @@ func kill(cause: String) -> void:
 	if state == State.DEAD:
 		return
 	state = State.DEAD
-	_sfx("sfx_death")
+	GameAudio.play("sfx_death", 0.0)
 	died.emit(cause)
 
 
@@ -263,10 +276,14 @@ func _on_area_entered(area: Area2D) -> void:
 		area.on_player_hit(self)
 
 
-func _sfx(name: String) -> void:
-	var p := AudioStreamPlayer.new()
-	p.stream = load("res://assets/audio/%s.wav" % name)
-	p.bus = "Master"
-	add_child(p)
-	p.finished.connect(p.queue_free)
-	p.play()
+func _puff() -> void:
+	var dust := Sprite2D.new()
+	dust.texture = load("res://assets/sprites/ui/dust.png")
+	dust.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	dust.position = Vector2(-12, 30)
+	dust.z_index = -1
+	add_child(dust)
+	var tw := create_tween()
+	tw.tween_property(dust, "modulate:a", 0.0, 0.32)
+	tw.parallel().tween_property(dust, "position:x", -36.0, 0.32)
+	tw.finished.connect(dust.queue_free)

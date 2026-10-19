@@ -59,7 +59,7 @@ func apply_boost(amount: float) -> void:
 func begin_telegraph(lane: int) -> void:
 	ambush_lane = lane
 	phase = Phase.TELEGRAPH
-	_telegraph = 0.55
+	_telegraph = RunRules.AMBUSH_TELEGRAPH
 
 
 func finish_ambush() -> void:
