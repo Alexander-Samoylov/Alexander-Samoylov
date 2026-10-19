@@ -1,0 +1,14 @@
+.godot/
+.import/
+/android/
+*.translation
+export.cfg
+.DS_Store
+*.apk
+*.aab
+*.ipa
+*.xcarchive
+build/
+.mono/
+data_*
+.export/
