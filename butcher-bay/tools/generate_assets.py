@@ -578,6 +578,10 @@ def make_audio() -> None:
 
 
 def make_player_and_butcher() -> None:
+    sliced = ROOT / "assets" / "reference" / "cut_victim.png"
+    if sliced.exists():
+        print("skip placeholder player/butcher; sliced skins present")
+        return
     for i in range(4):
         save(scale_nn(draw_player("run", i), 2), SPR / "player" / f"run_{i}.png")
         save(scale_nn(draw_player("jump", i), 2), SPR / "player" / f"jump_{i}.png")

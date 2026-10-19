@@ -33,7 +33,7 @@ var _blood_acc: float = 0.0
 
 func _ready() -> void:
 	_sprite = AnimatedSprite2D.new()
-	_sprite.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	_sprite.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
 	_sprite.sprite_frames = _build_frames()
 	_sprite.play("run")
 	add_child(_sprite)

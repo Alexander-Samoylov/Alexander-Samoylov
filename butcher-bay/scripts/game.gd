@@ -109,7 +109,7 @@ func spawn_streak(at: Vector2) -> void:
 	s.position = at
 	s.z_index = 6
 	if _streaks.size() > 12:
-		var old := _streaks.pop_front()
+		var old: Node2D = _streaks.pop_front() as Node2D
 		if is_instance_valid(old):
 			old.queue_free()
 	_world.add_child(s)
